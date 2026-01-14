@@ -38,16 +38,17 @@
 -- | YesAlready -> YesNo -> Click Yes -> Message: Do you wish to join the Miners' Guild?
 -- | YesAlready -> YesNo -> Click Yes -> Message: Ready to work hard and get dirty?
 -- | SimpleTweaks -> Command -> Equip Recommended Command -> /equiprecommended
--- | GatherBuddyReborn -> Auto-Gather configured (One of these 2 Presets)
+-- | GatherBuddyReborn -> Auto-Gather configured (One of these 3 Presets)
 -- | Import (Iron Ore): H4sIAAAAAAAAClWQS2vrMBCFV/0fYtbT4rElJ9au0AeBPnLh7spdqPGEmLp2kZRFW/Lfy0i207uRP3RGZ47PxTdsIr9v2gD2xVBRY40ajV6v0eiqREPFSqhCQ1SgoVLjCk1ZN3Ks0RhqRKJ/CH+Obohd7DiA/QYxA0sGQT4IOp3iDJZKoarMuuwAK6CrKgNRkaGsm/RulV9TKTZFEsQHQQJMGhHYpmmaE8LW837PntuHcediNw7/RapyJr1e8shVjkGmnoMk1JMqkp6TkalPCLeDe+25lf5+2Ud/5OSfQc+QN80s/z5xWrvcV+d7KhZONWQ+D6cyloGzeWpkMaHMJ4Qn985g4cF9farHbmAPCDccdr77kIrAwrZnF1jxEI6eVTx0QXVBxQOrceg/1fUxjpf3Lh7Yq63nwFFNHVypv7+GN34c1LPnaQgQ7sa+Zb918QAWAOHZt+zB0mppcU585/r+1e3ewO5dH/j0A/jRQSGhAgAA
 -- | Import (Cinnabar): H4sIAAAAAAAAClWQT0/DMAzFT3yPyGeDmjbp2twQ/4Q0YEjcEIds9dSKrkVJdhho3x05aTe4pL84tt/ru/iBx0C7x8aDedcyK7FEhVpVFWpV5KhltmAqUEuZoZa5wgWzRJ2XFR81ai3rD4TXvR1CFzryYH6Al4GRGoE/CCqevBmMzJmKPL2zBhgGVRQJpMwmyHkuQ1ikcS1rMHVd1wgsnYp5yTvjmAQjjwgrR9stOWqW48aGbhz+WSqSJ1UlV3yffEWMdqQuZ0MJo6WI/KqOCHeDXffUcH5/1ge3p7g/gZohKczM/z5xlDvVi3OdBcPEHEPic3PMYuKYxYnPQjER5iPCs90RGFja74N46gZyIgeEW/Ib131xSGBg1ZP1JGjwe0citJ0XnRehJTEO/UFc78N4+WBDS06sHHkKYkrhSrz9ab7phsGu7dwECPdj35Bb2dCCAUB4cQ05MLI65Th7vrd9v7abTzBb23s6/gKAj7f5owIAAA==
--- | 
+-- | Import (Ragstone): H4sIAAAAAAAAClWQT0/jMBDFT3wPa86zKHbsNPENCVhVArYgbmgPppnSaNNkZbsHFvW7o7GTtHtxfpl/7+ldfcE60mHdBrBvRhYVVqjR6LpGo0uFRhYrphKNlAUaqTSumCUaVdX8NGiMbJhWTFxT9W+E56MbYhc7CmC/gG+DlQaBPwg6vSwEViqmUuU+S4Jl0GWZQcpiAsV7BcIqrxvZZFDVAnww7ci5sgxPLaVqsE3TNCeEjafdjjy1D+PWxW4c/nNbZru6zob5f7KcMDmVppq9ZkxuE3JXnxDuBvfeU8tJX5yP/kjpfgY9Q1aYmWOZOMkt9fJcZ8GZOaHM5+EU08QpqYXPQimvpX65e55JwTGfEJ7cgcDCg/v3KR67gbxQgHBLYeu7vxwkWNj05AIJGsLRk4j7LoguiLgnMQ79p7g5xvHHTxf35MXGU6AopqSuxevF8Iv7CHEcaBoChPuxb8lvXNyDBUD45VvyYGW9ZD17vnd9/+62f8DuXB/o9A1qbk5x8QIAAA== 
 -- | Curefunc -> Must be installed
 -- | 
 -- └-----------------------------------------------------------------------------------------------------------------------
 --
 -- ┌-----------------------------------------------------------------------------------------------------------------------
--- | *** Stats for getting to Level 20 ***
+-- | *** Stats for getting to Level 20 *** 
+-- |    Only tested with Iron Ore Preset
 -- |
 -- | With Flying unlocked & New World Bonus: 17 Minutes
 -- | Without Flying unlocked & New World Bonus: 20 Minutes
