@@ -34,6 +34,8 @@
 -- | TextAdvance -> Enable these Configurations
 -- | Automatic quest accept -> Enable
 -- | 
+-- | Plugins needed: Textadvance, Yesalready, GatherBuddy Reborn, vnavmesh, Lifestream, SimpleTweaks, AutoRetainer
+-- |
 -- | YesAlready -> Used for Guild interactions (Unlock quests)
 -- | YesAlready -> YesNo -> Click Yes -> Message: Do you wish to join the Miners' Guild?
 -- | YesAlready -> YesNo -> Click Yes -> Message: Ready to work hard and get dirty?
