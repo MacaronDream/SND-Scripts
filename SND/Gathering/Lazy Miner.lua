@@ -9,7 +9,7 @@
 -- | 
 -- | Automated FFXIV Miner leveling script using GatherBuddyReborn
 -- | 
--- | Macaron Lazy Miner 1.0 (Inspired by Lazy Crafter made by XA)
+-- | Macaron Lazy Miner 1.1 (Inspired by Lazy Crafter made by XA)
 -- | 
 -- | Features:
 -- | • Automatic teleportation to Ul'dah - Steps of Thal (Sapphire Avenue Exchange)
@@ -23,34 +23,33 @@
 -- |  xafunc; can be found here: https://github.com/xa-io/ffxiv-tools/blob/main/snd/xafunc.lua
 -- | 
 -- | ## Release Notes ##
+-- | v1.1 - Added Item Verification, Teleport Logic using Ul'dah Aethernet, Rebuy Missing Item Logic, Removed Ragstone Preset
 -- | v1.0 - Initial Release
 -- | 
 -- └-----------------------------------------------------------------------------------------------------------------------
 -- ┌-----------------------------------------------------------------------------------------------------------------------
 -- | *** Game & Plugin Requirements & Configuration***
 -- | 
--- | InGame: Lvl 10 Class Quest, Teleport to Black Brush Central Station & Horizon unlocked, Ul'Dah Aethernet. Chocobo Recommended!!!
+-- | InGame: Lvl 10 Class Quest, Ul'Dah Aethernet, Chocobo Recommended!
 -- | Gil needed: 6500 Gil
 -- | TextAdvance -> Enable these Configurations
 -- | Automatic quest accept -> Enable
 -- | 
--- | Plugins needed: Textadvance, Yesalready, GatherBuddy Reborn, vnavmesh, Lifestream, SimpleTweaks, AutoRetainer
--- |
+-- | CBT -> Commands -> /equip -> Enable
 -- | YesAlready -> Used for Guild interactions (Unlock quests)
 -- | YesAlready -> YesNo -> Click Yes -> Message: Do you wish to join the Miners' Guild?
 -- | YesAlready -> YesNo -> Click Yes -> Message: Ready to work hard and get dirty?
 -- | SimpleTweaks -> Command -> Equip Recommended Command -> /equiprecommended
--- | GatherBuddyReborn -> Auto-Gather configured (One of these 3 Presets)
+-- | GatherBuddyReborn -> Auto-Gather configured (One of these 2 Presets)
 -- | Import (Iron Ore): H4sIAAAAAAAAClWQS2vrMBCFV/0fYtbT4rElJ9au0AeBPnLh7spdqPGEmLp2kZRFW/Lfy0i207uRP3RGZ47PxTdsIr9v2gD2xVBRY40ajV6v0eiqREPFSqhCQ1SgoVLjCk1ZN3Ks0RhqRKJ/CH+Obohd7DiA/QYxA0sGQT4IOp3iDJZKoarMuuwAK6CrKgNRkaGsm/RulV9TKTZFEsQHQQJMGhHYpmmaE8LW837PntuHcediNw7/RapyJr1e8shVjkGmnoMk1JMqkp6TkalPCLeDe+25lf5+2Ud/5OSfQc+QN80s/z5xWrvcV+d7KhZONWQ+D6cyloGzeWpkMaHMJ4Qn985g4cF9farHbmAPCDccdr77kIrAwrZnF1jxEI6eVTx0QXVBxQOrceg/1fUxjpf3Lh7Yq63nwFFNHVypv7+GN34c1LPnaQgQ7sa+Zb918QAWAOHZt+zB0mppcU585/r+1e3ewO5dH/j0A/jRQSGhAgAA
 -- | Import (Cinnabar): H4sIAAAAAAAAClWQT0/DMAzFT3yPyGeDmjbp2twQ/4Q0YEjcEIds9dSKrkVJdhho3x05aTe4pL84tt/ru/iBx0C7x8aDedcyK7FEhVpVFWpV5KhltmAqUEuZoZa5wgWzRJ2XFR81ai3rD4TXvR1CFzryYH6Al4GRGoE/CCqevBmMzJmKPL2zBhgGVRQJpMwmyHkuQ1ikcS1rMHVd1wgsnYp5yTvjmAQjjwgrR9stOWqW48aGbhz+WSqSJ1UlV3yffEWMdqQuZ0MJo6WI/KqOCHeDXffUcH5/1ge3p7g/gZohKczM/z5xlDvVi3OdBcPEHEPic3PMYuKYxYnPQjER5iPCs90RGFja74N46gZyIgeEW/Ib131xSGBg1ZP1JGjwe0citJ0XnRehJTEO/UFc78N4+WBDS06sHHkKYkrhSrz9ab7phsGu7dwECPdj35Bb2dCCAUB4cQ05MLI65Th7vrd9v7abTzBb23s6/gKAj7f5owIAAA==
--- | Import (Ragstone): H4sIAAAAAAAAClWQT0/jMBDFT3wPa86zKHbsNPENCVhVArYgbmgPppnSaNNkZbsHFvW7o7GTtHtxfpl/7+ldfcE60mHdBrBvRhYVVqjR6LpGo0uFRhYrphKNlAUaqTSumCUaVdX8NGiMbJhWTFxT9W+E56MbYhc7CmC/gG+DlQaBPwg6vSwEViqmUuU+S4Jl0GWZQcpiAsV7BcIqrxvZZFDVAnww7ci5sgxPLaVqsE3TNCeEjafdjjy1D+PWxW4c/nNbZru6zob5f7KcMDmVppq9ZkxuE3JXnxDuBvfeU8tJX5yP/kjpfgY9Q1aYmWOZOMkt9fJcZ8GZOaHM5+EU08QpqYXPQimvpX65e55JwTGfEJ7cgcDCg/v3KR67gbxQgHBLYeu7vxwkWNj05AIJGsLRk4j7LoguiLgnMQ79p7g5xvHHTxf35MXGU6AopqSuxevF8Iv7CHEcaBoChPuxb8lvXNyDBUD45VvyYGW9ZD17vnd9/+62f8DuXB/o9A1qbk5x8QIAAA== 
+-- | 
 -- | Curefunc -> Must be installed
 -- | 
 -- └-----------------------------------------------------------------------------------------------------------------------
 --
 -- ┌-----------------------------------------------------------------------------------------------------------------------
--- | *** Stats for getting to Level 20 *** 
--- |    Only tested with Iron Ore Preset
+-- | *** Stats for getting to Level 20 ***
 -- |
 -- | With Flying unlocked & New World Bonus: 17 Minutes
 -- | Without Flying unlocked & New World Bonus: 20 Minutes
@@ -138,6 +137,65 @@ local function interact_npc(name)
     CureSafeWait()
 end
 
+local function ensure_item(npc_name, item_id, icon_idx, submenu_idx, shop_callback)
+    if CureGetItemCount(item_id) < 1 then
+        CureEcho("Missing Item " .. item_id .. ". Purchasing from " .. npc_name .. "...")
+        interact_npc(npc_name)
+        CureSleep(1)
+        CureCallback("SelectIconString true " .. icon_idx)
+        CureSleep(1)
+        CureCallback("SelectString true " .. submenu_idx)
+        CureSleep(1)
+        CureCallback("Shop true " .. shop_callback)
+        CureSleep(1)
+        CureCallback("SelectYesno true 0")
+        CureSleep(0.5)
+        CureCallback("Shop true -1") -- Close shop
+        CureSleep(1)
+    else
+        CureEcho("Item " .. item_id .. " already in inventory.")
+    end
+end
+
+local function CureEnsureItems()
+    local checklist = {
+        -- Yoyobasa
+        { npc="Yoyobasa", id=2520, menu=1, sub=0, shop="0 1 1 Undefined", coords=yoyobasa_coords },
+        { npc="Yoyobasa", id=2521, menu=1, sub=1, shop="0 0 1 Undefined", coords=yoyobasa_coords },
+        { npc="Yoyobasa", id=2522, menu=1, sub=1, shop="0 1 1 Undefined", coords=yoyobasa_coords },
+        { npc="Yoyobasa", id=2534, menu=1, sub=1, shop="0 3 1 Undefined", coords=yoyobasa_coords },
+        -- Gwalter
+        { npc="Gwalter", id=2652, menu=2, sub=0, shop="0 0 1 Undefined", coords=gwalter_coords },
+        { npc="Gwalter", id=3001, menu=2, sub=0, shop="0 2 1 Undefined", coords=gwalter_coords },
+        { npc="Gwalter", id=3532, menu=2, sub=0, shop="0 4 1 Undefined", coords=gwalter_coords },
+        { npc="Gwalter", id=3310, menu=2, sub=0, shop="0 7 1 Undefined", coords=gwalter_coords },
+        { npc="Gwalter", id=3761, menu=2, sub=0, shop="0 8 1 Undefined", coords=gwalter_coords },
+        { npc="Gwalter", id=2658, menu=2, sub=1, shop="0 0 1 Undefined", coords=gwalter_coords },
+        { npc="Gwalter", id=3020, menu=2, sub=1, shop="0 8 1 Undefined", coords=gwalter_coords },
+        { npc="Gwalter", id=3537, menu=2, sub=1, shop="0 13 1 Undefined", coords=gwalter_coords },
+        { npc="Gwalter", id=3322, menu=2, sub=1, shop="0 18 1 Undefined", coords=gwalter_coords },
+        { npc="Gwalter", id=3771, menu=2, sub=1, shop="0 22 1 Undefined", coords=gwalter_coords },
+        { npc="Gwalter", id=3774, menu=2, sub=1, shop="0 23 1 Undefined", coords=gwalter_coords }
+    }
+    
+    local moved = false
+    
+    for _, item in ipairs(checklist) do
+        if CureGetItemCount(item.id) < 1 then
+             CureEcho("Verification failed: Missing Item " .. item.id)
+             local coords = get_coordinates(item.coords)
+             move_to(coords)
+             ensure_item(item.npc, item.id, item.menu, item.sub, item.shop)
+             moved = true
+        end
+    end
+    
+    if moved then
+        CureEcho("Items recovered. Returning to safe spot.")
+        CureMovetoXA(131.40667724609, 4.0, -30.307592391968)
+    end
+end
+
 -- ----------------------
 -- -- End of Functions --
 -- ----------------------
@@ -206,7 +264,7 @@ local function CureLazyMinerXP()
     CureCallback("SelectString true 0") -- Open Lvl 1-9 Shop
     CureSleep(1)
     CureCallback("Shop true 0 1 1 Undefined") -- Buy Lvl 8 Pickaxe ID: 2520
-    CureSleep(1)
+    CureSleep(0.5)
     CureCallback("SelectYesno true 0")
     CureSleep(1)
     CureCallback("Shop true -1") -- Close Shop
@@ -216,11 +274,11 @@ local function CureLazyMinerXP()
     CureCallback("Shop true 0 0 1 Undefined") -- Buy Lvl 11 Pickaxe ID: 2521
     CureSleep(0.5)
     CureCallback("SelectYesno true 0")
-    CureSleep(0.5)
+    CureSleep(1)
     CureCallback("Shop true 0 1 1 Undefined") -- Buy Lvl 14 Pickaxe ID: 2522
     CureSleep(0.5)
     CureCallback("SelectYesno true 0")
-    CureSleep(0.5)
+    CureSleep(1)
     CureCallback("Shop true 0 3 1 Undefined") -- Buy Lvl 10 Sledgehammer ID: 2534
     CureSleep(0.5)
     CureCallback("SelectYesno true 0")
@@ -287,6 +345,7 @@ local function CureLazyMinerXP()
     CureCallback("SelectYesno true 0")
     CureSleep(1)
     CureMovetoXA(131.40667724609, 4.0, -30.307592391968)
+    CureEnsureItems()
     CureLifestreamCmd("Gate of Nald")
     
     -- 4. Gathering Loop
@@ -296,6 +355,7 @@ local function CureLazyMinerXP()
     yield("/gbr auto on") -- Start GatherBuddy
     
     local was_gathering = false
+    local bone_chip_check_done = false
     
     while CureGetCurrentLevel() < target_level do -- 16 is MIN Job ID
         -- Monitor Condition 6 (Gathering)
@@ -310,6 +370,16 @@ local function CureLazyMinerXP()
                 CureSleep(2) -- Wait for animation
                 yield("/equiprecommended")
                 CureSleep(1)
+                
+                if not bone_chip_check_done and CureGetItemCount(5432) >= 15 then
+                    CureEcho("Obtained 15+ Bone Chips. Initiating Teleport...")
+                    yield("/gbr auto off")
+                    CureSleep(2)
+                    CureLifestreamCmd("Gate of the Sultana")
+                    CureSleep(2)
+                    bone_chip_check_done = true
+                end
+                
                 was_gathering = false
                 yield("/gbr auto on") -- Ensure it's still running/resume
             end
