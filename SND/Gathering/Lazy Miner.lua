@@ -9,7 +9,7 @@
 -- | 
 -- | Automated FFXIV Miner leveling script using GatherBuddyReborn
 -- | 
--- | Macaron Lazy Miner 1.1 (Inspired by Lazy Crafter made by XA)
+-- | Macaron Lazy Miner 1.2 (Inspired by Lazy Crafter made by XA)
 -- | 
 -- | Features:
 -- | • Automatic teleportation to Ul'dah - Steps of Thal (Sapphire Avenue Exchange)
@@ -23,7 +23,8 @@
 -- |  xafunc; can be found here: https://github.com/xa-io/ffxiv-tools/blob/main/snd/xafunc.lua
 -- | 
 -- | ## Release Notes ##
--- | v1.1 - Added Item Verification, Teleport Logic using Ul'dah Aethernet, Rebuy Missing Item Logic, Removed Ragstone Preset
+-- | v1.2 - Added Quest Eligibility Check, Smart Unlock/Skip Logic, Conditional Shopping (Fresh vs Unlocked), Pickaxe Recovery, and Zone Safety Checks
+-- | v1.1 - Added Item Verification, Teleport Logic using Ul'dah Aethernet, Rebuy Missing Item Logic
 -- | v1.0 - Initial Release
 -- | 
 -- └-----------------------------------------------------------------------------------------------------------------------
@@ -39,6 +40,8 @@
 -- | YesAlready -> Used for Guild interactions (Unlock quests)
 -- | YesAlready -> YesNo -> Click Yes -> Message: Do you wish to join the Miners' Guild?
 -- | YesAlready -> YesNo -> Click Yes -> Message: Ready to work hard and get dirty?
+-- | YesAlready -> List -> Adalberta -> Nothing
+-- | YesAlready -> List -> Linette -> Nothing
 -- | SimpleTweaks -> Command -> Equip Recommended Command -> /equiprecommended
 -- | GatherBuddyReborn -> Auto-Gather configured (One of these 2 Presets)
 -- | Import (Iron Ore): H4sIAAAAAAAAClWQS2vrMBCFV/0fYtbT4rElJ9au0AeBPnLh7spdqPGEmLp2kZRFW/Lfy0i207uRP3RGZ47PxTdsIr9v2gD2xVBRY40ajV6v0eiqREPFSqhCQ1SgoVLjCk1ZN3Ks0RhqRKJ/CH+Obohd7DiA/QYxA0sGQT4IOp3iDJZKoarMuuwAK6CrKgNRkaGsm/RulV9TKTZFEsQHQQJMGhHYpmmaE8LW837PntuHcediNw7/RapyJr1e8shVjkGmnoMk1JMqkp6TkalPCLeDe+25lf5+2Ud/5OSfQc+QN80s/z5xWrvcV+d7KhZONWQ+D6cyloGzeWpkMaHMJ4Qn985g4cF9farHbmAPCDccdr77kIrAwrZnF1jxEI6eVTx0QXVBxQOrceg/1fUxjpf3Lh7Yq63nwFFNHVypv7+GN34c1LPnaQgQ7sa+Zb918QAWAOHZt+zB0mppcU585/r+1e3ewO5dH/j0A/jRQSGhAgAA
@@ -182,6 +185,12 @@ local function CureEnsureItems()
     
     for _, item in ipairs(checklist) do
         if CureGetItemCount(item.id) < 1 then
+             if not moved then
+                 CureEcho("Items missing. Ensuring correct Zone/Location...")
+                 CureLifestreamCmd("Sapphire")
+                 CureSafeWait()
+             end
+             
              CureEcho("Verification failed: Missing Item " .. item.id)
              local coords = get_coordinates(item.coords)
              move_to(coords)
@@ -196,6 +205,41 @@ local function CureEnsureItems()
     end
 end
 
+local function IsQuestCompleted(id)
+    if _G.IsQuestCompleted then
+        return _G.IsQuestCompleted(id)
+    end
+
+    if luanet and luanet.import_type then
+        local ok, T = pcall(luanet.import_type, "FFXIVClientStructs.FFXIV.Client.Game.QuestManager")
+        if ok and T and T.IsQuestComplete then
+             local okComp, done = pcall(T.IsQuestComplete, id % 65536)
+             if okComp then return done end
+        end
+    end
+end
+
+local function CanBecomeMiner()
+    local quests = {261, 288, 555, 698, 314, 315, 35, 143, 67, 134, 91, 147, 348, 349, 456, 457}
+    for _, qId in ipairs(quests) do
+        if IsQuestCompleted(qId) then return true end
+    end
+    return false
+end
+
+local function RecoverPickaxe()
+    if CureGetItemCount(2519) < 1 then
+         CureEcho("Missing Weathered Pickaxe (2519). Recovering from Yoyobasa...")
+         CureLifestreamCmd("Sapphire")
+         CureSafeWait()
+         local coords = get_coordinates(yoyobasa_coords)
+         move_to(coords)
+         ensure_item("Yoyobasa", 2519, 1, 0, "0 0 1 Undefined")
+         CureEcho("Pickaxe recovered. Moving to Safe Spot.")
+         CureMovetoXA(131.40667724609, 4.0, -30.307592391968)
+    end
+end
+
 -- ----------------------
 -- -- End of Functions --
 -- ----------------------
@@ -204,38 +248,69 @@ end
 -- -- Start of Lazy Miner --
 -- -----------------------------
 
+local function GetMinerLevel()
+    if Player and Player.GetJob then
+        return Player.GetJob(16).Level
+    end
+    if GetLevelXA then
+        return GetLevelXA(16)
+    end
+    return 0
+end
+
 local function CureLazyMinerXP()
     CureEnableTextAdvance()
     CureEcho("Starting Macaron Lazy Miner...")
+    
+    local current_miner_level = GetMinerLevel()
+    CureEcho("Level: " .. current_miner_level)
+
+    -- 1. Eligibility Checks
+    if not CanBecomeMiner() then
+        CureEcho("Character not eligible (Starter quests not done). Skipping.")
+        return
+    end
+    
+    if current_miner_level >= target_level then
+        CureEcho("Miner Job already at target level " .. target_level .. ". Skipping.")
+        return
+    end
     
     if get_delay() > 0 then
         CureSleep(get_delay())
     end
 
-    -- 1. Teleport to Ul'dah if needed
+    -- 2. Zone Check
     if CureGetZoneID() ~= zone_id then
         CureEcho("Teleporting to Ul'dah - Miner Guild...")
         CureLifestreamCmd("Miner")
     else
         CureEcho("Already in Ul'dah.")
     end
+     
+    local is_fresh_run = (current_miner_level < 1)
 
-    -- 2. Unlock Miner Class
-    CureEcho(" proceeding to Unlock Miner Class...")
-    
-    -- Linette
-    local coords = get_coordinates(linette_coords)
-    move_to(coords)
-    interact_npc("Linette")
-    CureSleep(2) 
-    interact_npc("Linette")
-    CureSafeWait()
-    
-    -- Adalberta
-    coords = get_coordinates(adalberta_coords)
-    move_to(coords)
-    interact_npc("Adalberta")
-    CureSleep(6)
+    -- 3. Class Unlock (Only if needed)
+    if is_fresh_run then
+        CureEcho("Locked: Proceeding to Unlock Miner Class...")
+        
+        -- Linette
+        local coords = get_coordinates(linette_coords)
+        move_to(coords)
+        interact_npc("Linette")
+        CureSleep(2) 
+        interact_npc("Linette")
+        CureSafeWait()
+        
+        -- Adalberta
+        coords = get_coordinates(adalberta_coords)
+        move_to(coords)
+        interact_npc("Adalberta")
+        CureSleep(6)
+    else
+        CureEcho("Miner Unlocked (Level " .. current_miner_level .. "). Skipping unlock quests.")
+        RecoverPickaxe()
+    end
     
     -- Equip Level 1 Pickaxe (Item 2519)
     yield("/equip 2519")
@@ -249,108 +324,135 @@ local function CureLazyMinerXP()
     CureEcho("Attempting to equip Pickaxe. CBT #3")
     CureSleep(1.5)
     
-    -- 3. Buy Gear
-    CureEcho("Proceeding to Buy Gear...")
+    -- 5. Shopping Logic
+    if is_fresh_run then
+        CureEcho("Fresh Run: Executing Batch Shopping...")
+        
+        -- Yoyobasa (Pickaxes)
+        local coords = get_coordinates(yoyobasa_coords)
+        CureLifestreamCmd("Sapphire")
+        move_to(coords)
+        interact_npc("Yoyobasa")
+        CureEcho("Yoyobasa Shop: Buying Items")
+        CureSleep(1)
+        CureCallback("SelectIconString true 1") -- Open Discipline of Land Shop
+        CureSleep(1)
+        CureCallback("SelectString true 0") -- Open Lvl 1-9 Shop
+        CureSleep(1)
+        CureCallback("Shop true 0 1 1 Undefined") -- Buy Lvl 8 Pickaxe ID: 2520
+        CureSleep(0.5)
+        CureCallback("SelectYesno true 0")
+        CureSleep(1)
+        CureCallback("Shop true -1") -- Close Shop
+        CureSleep(1)
+        CureCallback("SelectString true 1") -- Open lvl 10-19 Shop
+        CureSleep(1)
+        CureCallback("Shop true 0 0 1 Undefined") -- Buy Lvl 11 Pickaxe ID: 2521
+        CureSleep(0.5)
+        CureCallback("SelectYesno true 0")
+        CureSleep(1)
+        CureCallback("Shop true 0 1 1 Undefined") -- Buy Lvl 14 Pickaxe ID: 2522
+        CureSleep(0.5)
+        CureCallback("SelectYesno true 0")
+        CureSleep(1)
+        CureCallback("Shop true 0 3 1 Undefined") -- Buy Lvl 10 Sledgehammer ID: 2534
+        CureSleep(0.5)
+        CureCallback("SelectYesno true 0")
+        CureSleep(0.5)    
+        CureSleep(1)
+        CureEcho("Done Buying from Yoyobasa")
     
-    -- Yoyobasa (Pickaxes)
-    coords = get_coordinates(yoyobasa_coords)
-    CureLifestreamCmd("Sapphire")
-    move_to(coords)
-    interact_npc("Yoyobasa")
-    CureEcho("Yoyobasa Shop: Buying Items")
-    CureSleep(1)
-    CureCallback("SelectIconString true 1") -- Open Discipline of Land Shop
-    CureSleep(1)
-    CureCallback("SelectString true 0") -- Open Lvl 1-9 Shop
-    CureSleep(1)
-    CureCallback("Shop true 0 1 1 Undefined") -- Buy Lvl 8 Pickaxe ID: 2520
-    CureSleep(0.5)
-    CureCallback("SelectYesno true 0")
-    CureSleep(1)
-    CureCallback("Shop true -1") -- Close Shop
-    CureSleep(1)
-    CureCallback("SelectString true 1") -- Open lvl 10-19 Shop
-    CureSleep(1)
-    CureCallback("Shop true 0 0 1 Undefined") -- Buy Lvl 11 Pickaxe ID: 2521
-    CureSleep(0.5)
-    CureCallback("SelectYesno true 0")
-    CureSleep(1)
-    CureCallback("Shop true 0 1 1 Undefined") -- Buy Lvl 14 Pickaxe ID: 2522
-    CureSleep(0.5)
-    CureCallback("SelectYesno true 0")
-    CureSleep(1)
-    CureCallback("Shop true 0 3 1 Undefined") -- Buy Lvl 10 Sledgehammer ID: 2534
-    CureSleep(0.5)
-    CureCallback("SelectYesno true 0")
-    CureSleep(0.5)    
-    CureSleep(1)
-    CureEcho("Done Buying from Yoyobasa")
-
-    -- Gwalter (Gear)
-    coords = get_coordinates(gwalter_coords)
-    move_to(coords)
-    interact_npc("Gwalter")
-    CureEcho("Gwalter Shop: Buying Items")
-    CureSleep(1)
-    CureCallback("SelectIconString true 2") -- Open Discipline of Land Shop
-    CureSleep(1)
-    CureCallback("SelectString true 0") -- Open Lvl 1-9 Shop
-    CureSleep(1)
-    CureCallback("Shop true 0 0 1 Undefined") -- Buy lvl 5 Head Piece ID: 2652
-    CureSleep(0.5)
-    CureCallback("SelectYesno true 0")
-    CureSleep(0.5)
-    CureCallback("Shop true 0 1 1 Undefined") -- Buy lvl 6 Body Piece ID: 3001
-    CureSleep(0.5)
-    CureCallback("SelectYesno true 0")
-    CureSleep(0.5)
-    CureCallback("Shop true 0 4 1 Undefined") -- Buy lvl 6 Gloves Piece ID: 3532
-    CureSleep(0.5)
-    CureCallback("SelectYesno true 0")
-    CureSleep(0.5)
-    CureCallback("Shop true 0 7 1 Undefined") -- Buy lvl 5 Pants Piece ID: 3310
-    CureSleep(0.5)
-    CureCallback("SelectYesno true 0")
-    CureSleep(0.5)
-    CureCallback("Shop true 0 8 1 Undefined") -- Buy lvl 5 Shoes Piece ID: 3761
-    CureSleep(0.5)
-    CureCallback("SelectYesno true 0")
-    CureSleep(0.5)
-    CureCallback("Shop true -1") -- Close Shop
-    CureSleep(1)
-    CureCallback("SelectString true 1") -- Open Lvl 10-19 Shop
-    CureSleep(1)
-    CureCallback("Shop true 0 0 1 Undefined") -- Buy Lvl 10 Head Piece ID: 2658
-    CureSleep(0.5)
-    CureCallback("SelectYesno true 0")
-    CureSleep(0.5)
-    CureCallback("Shop true 0 8 1 Undefined") -- Buy Lvl 12 Body Piece ID: 3020
-    CureSleep(0.5)
-    CureCallback("SelectYesno true 0")
-    CureSleep(0.5)
-    CureCallback("Shop true 0 13 1 Undefined") -- Buy Lvl 11 Gloves Piece ID: 3537
-    CureSleep(0.5)
-    CureCallback("SelectYesno true 0")
-    CureSleep(0.5)    
-    CureCallback("Shop true 0 18 1 Undefined") -- Buy Lvl 15 Pants Piece ID: 3322
-    CureSleep(0.5)
-    CureCallback("SelectYesno true 0")
-    CureSleep(0.5)
-    CureCallback("Shop true 0 22 1 Undefined") -- Buy Lvl 11 Shoes Piece ID: 3771
-    CureSleep(0.5)
-    CureCallback("SelectYesno true 0")
-    CureSleep(0.5)
-    CureCallback("Shop true 0 23 1 Undefined") -- Buy lvl 15 Shoes Piece ID: 3774
-    CureSleep(0.5)
-    CureCallback("SelectYesno true 0")
-    CureSleep(1)
-    CureMovetoXA(131.40667724609, 4.0, -30.307592391968)
-    CureEnsureItems()
-    CureLifestreamCmd("Gate of Nald")
+        -- Gwalter (Gear)
+        local coords = get_coordinates(gwalter_coords)
+        move_to(coords)
+        interact_npc("Gwalter")
+        CureEcho("Gwalter Shop: Buying Items")
+        CureSleep(1)
+        CureCallback("SelectIconString true 2") -- Open Discipline of Land Shop
+        CureSleep(1)
+        CureCallback("SelectString true 0") -- Open Lvl 1-9 Shop
+        CureSleep(1)
+        CureCallback("Shop true 0 0 1 Undefined") -- Buy lvl 5 Head Piece ID: 2652
+        CureSleep(0.5)
+        CureCallback("SelectYesno true 0")
+        CureSleep(0.5)
+        CureCallback("Shop true 0 1 1 Undefined") -- Buy lvl 6 Body Piece ID: 3001
+        CureSleep(0.5)
+        CureCallback("SelectYesno true 0")
+        CureSleep(0.5)
+        CureCallback("Shop true 0 4 1 Undefined") -- Buy lvl 6 Gloves Piece ID: 3532
+        CureSleep(0.5)
+        CureCallback("SelectYesno true 0")
+        CureSleep(0.5)
+        CureCallback("Shop true 0 7 1 Undefined") -- Buy lvl 5 Pants Piece ID: 3310
+        CureSleep(0.5)
+        CureCallback("SelectYesno true 0")
+        CureSleep(0.5)
+        CureCallback("Shop true 0 8 1 Undefined") -- Buy lvl 5 Shoes Piece ID: 3761
+        CureSleep(0.5)
+        CureCallback("SelectYesno true 0")
+        CureSleep(0.5)
+        CureCallback("Shop true -1") -- Close Shop
+        CureSleep(1)
+        CureCallback("SelectString true 1") -- Open Lvl 10-19 Shop
+        CureSleep(1)
+        CureCallback("Shop true 0 0 1 Undefined") -- Buy Lvl 10 Head Piece ID: 2658
+        CureSleep(0.5)
+        CureCallback("SelectYesno true 0")
+        CureSleep(0.5)
+        CureCallback("Shop true 0 8 1 Undefined") -- Buy Lvl 12 Body Piece ID: 3020
+        CureSleep(0.5)
+        CureCallback("SelectYesno true 0")
+        CureSleep(0.5)
+        CureCallback("Shop true 0 13 1 Undefined") -- Buy Lvl 11 Gloves Piece ID: 3537
+        CureSleep(0.5)
+        CureCallback("SelectYesno true 0")
+        CureSleep(0.5)    
+        CureCallback("Shop true 0 18 1 Undefined") -- Buy Lvl 15 Pants Piece ID: 3322
+        CureSleep(0.5)
+        CureCallback("SelectYesno true 0")
+        CureSleep(0.5)
+        CureCallback("Shop true 0 22 1 Undefined") -- Buy Lvl 11 Shoes Piece ID: 3771
+        CureSleep(0.5)
+        CureCallback("SelectYesno true 0")
+        CureSleep(0.5)
+        CureCallback("Shop true 0 23 1 Undefined") -- Buy lvl 15 Shoes Piece ID: 3774
+        CureSleep(0.5)
+        CureCallback("SelectYesno true 0")
+        CureSleep(1)
+        
+        CureMovetoXA(131.40667724609, 4.0, -30.307592391968)
+        CureEnsureItems() -- Verify everything is there
+        if CureGetItemCount(5432) >= 15 then
+            CureEcho("Already have 15+ Bone Chips. Skipping to Gate of the Sultana...")
+            CureLifestreamCmd("Gate of the Sultana")
+        else
+            CureLifestreamCmd("Gate of Nald")
+        end
+    else
+        CureEcho("Unlocked: Skipping Batch Shopping. Verifying Gear...")
+        CureEnsureItems() -- Just verify/fill missing
+        if CureGetItemCount(5432) >= 15 then
+            CureEcho("Already have 15+ Bone Chips. Skipping to Gate of the Sultana...")
+            CureLifestreamCmd("Gate of the Sultana")
+        else
+            CureLifestreamCmd("Gate of Nald")
+        end
+    end
     
-    -- 4. Gathering Loop
+    -- 6. Gathering Loop
     CureEcho("Starting Gathering Loop (1-" .. target_level .. ")...")
+    CureSafeWait()
+    CureSleep(2)
     yield("/equiprecommended")
+    CureSleep(1.5)
+    
+    if GetMinerLevel() >= 10 then
+         CureEcho("Level 10+ detected. Force-equipping Sledgehammer (2534)...")
+         yield("/equip 2534")
+         CureSleep(0.5)
+    end
+    
     CureSleep(1)
     yield("/gbr auto on") -- Start GatherBuddy
     
@@ -369,6 +471,14 @@ local function CureLazyMinerXP()
                 CureEcho("Node finished. Equipping recommended gear...")
                 CureSleep(2) -- Wait for animation
                 yield("/equiprecommended")
+                CureSleep(1.5)
+                
+                if GetMinerLevel() >= 10 then
+                     CureEcho("Force-equipping Sledgehammer (2534)...")
+                     yield("/equip 2534")
+                     CureSleep(0.5)
+                end
+                
                 CureSleep(1)
                 
                 if not bone_chip_check_done and CureGetItemCount(5432) >= 15 then
