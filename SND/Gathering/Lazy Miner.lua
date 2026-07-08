@@ -9,7 +9,7 @@
 -- | 
 -- | Automated FFXIV Miner leveling script using GatherBuddyReborn
 -- | 
--- | Macaron Lazy Miner 1.2 (Inspired by Lazy Crafter made by XA)
+-- | Macaron Lazy Miner 1.3 (Inspired by Lazy Crafter made by XA)
 -- | 
 -- | Features:
 -- | • Automatic teleportation to Ul'dah - Steps of Thal (Sapphire Avenue Exchange)
@@ -23,6 +23,7 @@
 -- |  xafunc; can be found here: https://github.com/xa-io/ffxiv-tools/blob/main/snd/xafunc.lua
 -- | 
 -- | ## Release Notes ##
+-- | v1.3 - Added CureGetItemCount (Thanks Vera ^^)
 -- | v1.2 - Added Quest Eligibility Check, Smart Unlock/Skip Logic, Conditional Shopping (Fresh vs Unlocked), Pickaxe Recovery, and Zone Safety Checks
 -- | v1.1 - Added Item Verification, Teleport Logic using Ul'dah Aethernet, Rebuy Missing Item Logic
 -- | v1.0 - Initial Release
@@ -120,6 +121,11 @@ local gwalter_coords = {
 -- ------------------------
 -- -- Start of Functions --
 -- ------------------------
+
+function CureGetItemCount(i)
+local count = Inventory.GetItemCount(i) + Inventory.GetHqItemCount(i)
+    return count
+end
 
 local function get_coordinates(coords_table)
     return coords_table[position]
